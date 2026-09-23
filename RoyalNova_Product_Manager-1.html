@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RoyalNova — Product Manager</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f5f5;color:#222}
+header{background:#111;color:#fff;padding:16px 5%;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:5}
+.logo{font-size:25px;font-weight:bold;color:#f5c542}.cart{border:0;background:#f5c542;padding:10px 14px;border-radius:20px;font-weight:bold}
+.hero{text-align:center;padding:40px 6%;background:linear-gradient(135deg,#171717,#4a3500);color:#fff}.hero h1{font-size:36px;margin:0 0 10px}
+section{padding:28px 6%}.title{text-align:center}.form{max-width:600px;margin:auto;background:#fff;padding:20px;border-radius:14px;box-shadow:0 3px 15px #0002}
+label{display:block;font-weight:bold;margin:12px 0 6px}input,textarea{width:100%;padding:12px;border:1px solid #ccc;border-radius:8px;font-size:16px}
+button.primary{margin-top:15px;width:100%;padding:13px;background:#111;color:#fff;border:0;border-radius:8px;font-weight:bold;font-size:16px}
+.products{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}.card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 10px #0001}.card img{width:100%;height:190px;object-fit:cover;background:#eee}.info{padding:14px}.price{font-size:20px;font-weight:bold;margin:8px 0}.buy{width:100%;border:0;background:#111;color:#fff;padding:10px;border-radius:7px;font-weight:bold}.del{margin-top:7px;width:100%;border:1px solid #ddd;background:#fff;padding:8px;border-radius:7px}
+.empty{text-align:center;color:#777;padding:20px}footer{background:#111;color:#aaa;text-align:center;padding:20px}
+#cartBox{display:none;position:fixed;right:12px;top:70px;width:320px;max-width:90%;background:#fff;padding:18px;border-radius:12px;box-shadow:0 5px 25px #0005;z-index:10}.item{padding:8px 0;border-bottom:1px solid #ddd}.order{display:block;background:#25D366;color:white;text-decoration:none;text-align:center;padding:12px;margin-top:12px;border-radius:7px;font-weight:bold}
+</style>
+</head>
+<body>
+<header><div class="logo">RoyalNova</div><button class="cart" onclick="toggleCart()">🛒 Cart (<span id="count">0</span>)</button></header>
+
+<div class="hero"><h1>RoyalNova</h1><p>अपना Online Store आसानी से चलाएँ</p></div>
+
+<section>
+<h2 class="title">➕ Product Add करें</h2>
+<div class="form">
+<label>Product Name</label><input id="name" placeholder="जैसे Premium T-Shirt">
+<label>Price (₹)</label><input id="price" type="number" placeholder="499">
+<label>Product Photo</label><input id="photo" type="file" accept="image/*">
+<label>Description</label><textarea id="desc" rows="3" placeholder="Product के बारे में लिखें"></textarea>
+<button class="primary" onclick="addProduct()">Product Add करें</button>
+<p id="msg"></p>
+</div>
+</section>
+
+<section id="productsSection">
+<h2 class="title">🛍️ Your Products</h2>
+<div id="products" class="products"></div>
+</section>
+
+
+<section id="paymentSection">
+<h2 class="title">💳 UPI Payment</h2>
+<div class="form" style="text-align:center">
+<p>Order का payment UPI से करें:</p>
+<p style="font-size:20px;font-weight:bold;margin:12px 0">royalnovaenter@naviaxis</p>
+<a class="primary" style="display:block;text-decoration:none;background:#111;color:#fff;border-radius:8px" href="upi://pay?pa=royalnovaenter@naviaxis&pn=RoyalNova&cu=INR">📲 Pay with UPI App</a>
+<p style="margin-top:12px;font-size:13px;color:#666">UPI app installed होने पर यह button उपलब्ध app में payment खोलने की कोशिश करेगा।</p>
+</div>
+</section>
+
+<footer>© 2026 RoyalNova</footer>
+
+<div id="cartBox"><h2>🛒 Cart</h2><div id="cartItems"></div><b>Total: ₹<span id="total">0</span></b><a id="pay" class="order" style="background:#111" href="upi://pay?pa=royalnovaenter@naviaxis&pn=RoyalNova&cu=INR">💳 Pay UPI</a><a id="order" class="order" href="#">WhatsApp Order</a></div>
+
+<script>
+let products=JSON.parse(localStorage.getItem("royalnova_products")||"[]");
+let cart=JSON.parse(localStorage.getItem("royalnova_cart")||"[]");
+
+function save(){localStorage.setItem("royalnova_products",JSON.stringify(products));localStorage.setItem("royalnova_cart",JSON.stringify(cart))}
+function addProduct(){
+ const name=document.getElementById("name").value.trim(),price=Number(document.getElementById("price").value),desc=document.getElementById("desc").value.trim(),file=document.getElementById("photo").files[0];
+ if(!name||!price){alert("Product Name और Price भरें.");return}
+ if(file){const r=new FileReader();r.onload=()=>finish(name,price,desc,r.result);r.readAsDataURL(file)}
+ else finish(name,price,desc,"");
+}
+function finish(name,price,desc,img){
+ products.push({id:Date.now(),name,price,desc,img});save();render();
+ document.getElementById("name").value="";document.getElementById("price").value="";document.getElementById("desc").value="";document.getElementById("photo").value="";
+ document.getElementById("msg").textContent="✅ Product successfully add हो गया!";
+ setTimeout(()=>document.getElementById("msg").textContent="",2000);
+}
+function render(){
+ const box=document.getElementById("products");
+ box.innerHTML=products.length?products.map(p=>`<div class="card"><img src="${p.img||'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22300%22 height=%22200%22%3E%3Crect width=%22100%25%22 height=%22100%25%22 fill=%22%23eee%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 font-size=%2220%22%3ENo Photo%3C/text%3E%3C/svg%3E'}" alt="${p.name}"><div class="info"><h3>${p.name}</h3><p>${p.desc}</p><div class="price">₹${p.price}</div><button class="buy" onclick="addCart(${p.id})">🛒 Add to Cart</button><button class="del" onclick="removeProduct(${p.id})">Delete</button></div></div>`).join(""):'<div class="empty">अभी कोई product नहीं है। ऊपर से पहला product add करें।</div>';
+ updateCart();
+}
+function removeProduct(id){products=products.filter(p=>p.id!==id);save();render()}
+function addCart(id){const p=products.find(x=>x.id===id);if(p){cart.push(p);save();updateCart();alert("Cart में add हो गया!")}}
+function updateCart(){
+ document.getElementById("count").textContent=cart.length;
+ document.getElementById("cartItems").innerHTML=cart.length?cart.map((p,i)=>`<div class="item">${p.name} — ₹${p.price} <button onclick="cart.splice(${i},1);save();updateCart()">❌</button></div>`).join(""):"Cart खाली है";
+ const total=cart.reduce((s,p)=>s+p.price,0);document.getElementById("total").textContent=total;
+ const msg="Hello RoyalNova, मुझे order करना है:%0A"+cart.map(p=>"- "+p.name+" ₹"+p.price).join("%0A")+"%0A%0ATotal: ₹"+total;
+ document.getElementById("order").href=cart.length?"https://wa.me/917520792731?text="+msg:"#";
+ document.getElementById("pay").href=cart.length?"upi://pay?pa=royalnovaenter@naviaxis&pn=RoyalNova&am="+total+"&cu=INR":"#";
+}
+function toggleCart(){const b=document.getElementById("cartBox");b.style.display=b.style.display==="block"?"none":"block"}
+render();
+</script>
+</body>
+</html>
